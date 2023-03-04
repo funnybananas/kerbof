@@ -138,3 +138,4 @@ Perform Kerberoasting by specifying SPN:
 * Rubeus - https://github.com/GhostPack/Rubeus
 * mimikatz - https://github.com/gentilkiwi/mimikatz
 * kekeo - https://github.com/gentilkiwi/kekeo # kerbof
+# kerbof
