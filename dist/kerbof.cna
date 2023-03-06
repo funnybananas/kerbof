@@ -2,7 +2,7 @@ alias kerbof {
     local('$handle $data $args $klist $klist_all');
     
     # read in the right BOF file
-    $handle = openf(script_resource("superNanorobeus.x64.o"));
+    $handle = openf(script_resource("KerBOF.x64.o"));
     $data   = readb($handle, -1);
     closef($handle);
     
