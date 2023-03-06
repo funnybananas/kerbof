@@ -226,7 +226,7 @@ void PrintTicketInfo(WCHAR** dispatch, KERB_TICKET_CACHE_INFO_EX cacheInfo) {
 	"\tStart Time      : %d/%d/%d %d:%d:%d (UTC)\n"
 	"\tEnd Time        : %d/%d/%d %d:%d:%d (UTC)\n"
 	"\tRenew Time      : %d/%d/%d %d:%d:%d (UTC)\n"
-	"\tFlags           : %s\n"
+	"\tFlags           :%s\n"
 	"\tEncryption Type : %li\n\n",
 	GetNarrowStringFromUnicode(cacheInfo.ClientName), GetNarrowStringFromUnicode(cacheInfo.ClientRealm), 
 	GetNarrowStringFromUnicode(cacheInfo.ServerName), GetNarrowStringFromUnicode(cacheInfo.ServerRealm),
