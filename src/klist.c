@@ -122,8 +122,9 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
                             MSVCRT$free(ticket);
                         }
                     }
-                }
+                } else {
                 PrintTicketInfoKlist(cacheInfo);
+                }
             }
         }
         SECUR32$LsaFreeReturnBuffer(cacheResponse);
