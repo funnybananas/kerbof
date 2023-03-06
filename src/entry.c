@@ -106,9 +106,9 @@ void execute(WCHAR** dispatch, char* command, char* arg1, char* arg2, char* arg3
         if (MSVCRT$strcmp(command, "sessions") == 0) {
             execute_sessions(dispatch, hToken, luid, currentLuid);
         } else if (MSVCRT$strcmp(command, "klist") == 0) {
-            execute_klist(dispatch, hToken, luid, currentLuid, FALSE);
+            execute_klist(hToken, luid, currentLuid, FALSE);
         } else {
-            execute_klist(dispatch, hToken, luid, currentLuid, TRUE);
+            execute_klist(hToken, luid, currentLuid, TRUE);
         }
     } 
       else if (MSVCRT$strcmp(command, "help") == 0) {

@@ -12,8 +12,7 @@ char* Mstrcat(char *s1, char *s2) {
 }
 #endif
 
-void execute_klist(WCHAR** dispatch, HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
-//    BeaconPrintf(CALLBACK_OUTPUT, "Entered execute_klist");
+void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
 // IsHighIntregrity breaks it
     BOOL highIntegrity = IsHighIntegrity(hToken);
 //    BOOL highIntegrity = TRUE;
