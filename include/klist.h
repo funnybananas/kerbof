@@ -10,5 +10,5 @@ void execute_klist(WCHAR** dispatch, HANDLE hToken, LUID luid, BOOL currentLuid,
 void EnumerateTickets(LUID*, BOOL, HANDLE);
 NTSTATUS ExtractTicket(HANDLE hLsa, ULONG authPackage, LUID luid, UNICODE_STRING targetName, PUCHAR* ticket,
                        PULONG ticketSize);
-void PrintTicketInfo(WCHAR** dispatch, KERB_TICKET_CACHE_INFO_EX cacheInfo);
+void PrintTicketInfo(KERB_TICKET_CACHE_INFO_EX cacheInfo, CHAR* encoded);
 const char* PrintTicketFlags(ULONG ticketFlags);
