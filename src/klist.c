@@ -1,10 +1,22 @@
 #include "klist.h"
 
+#ifndef strcat
+char* Mstrcat(char *s1, char *s2) {
+    char *os1;
+
+    os1 = s1;
+    while (*s1++);
+    --s1;
+    while ((*s1++ = *s2++));
+    return (os1);
+}
+#endif
+
 void execute_klist(WCHAR** dispatch, HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
 //    BeaconPrintf(CALLBACK_OUTPUT, "Entered execute_klist");
 // IsHighIntregrity breaks it
-//    BOOL highIntegrity = IsHighIntegrity(hToken);
-    BOOL highIntegrity = FALSE;
+    BOOL highIntegrity = IsHighIntegrity(hToken);
+//    BOOL highIntegrity = TRUE;
     if (!highIntegrity && !currentLuid) {
         PRINT(dispatch, "[!] Not in high integrity.\n");
         return;
@@ -42,11 +54,11 @@ void execute_klist(WCHAR** dispatch, HANDLE hToken, LUID luid, BOOL currentLuid,
 //        PrintLogonSessionData(dispatch, (*sessionData.sessionData[i]));
          WCHAR* sid = NULL;
          ADVAPI32$ConvertSidToStringSidW(sessionData.sessionData[i]->Sid, &sid);
-	     SYSTEMTIME logon_utc = ConvertToSystemtime(sessionData.sessionData[i]->LogonTime);
+         SYSTEMTIME logon_utc = ConvertToSystemtime(sessionData.sessionData[i]->LogonTime);
          BeaconPrintf(CALLBACK_OUTPUT,
 	     "\nUsername             : %s\n" 
 	     "Domain               : %s\n"
-	     "LogonId              : %lx:0x:%lx\n"
+	     "LogonId              : %lx:0x%lx\n"
 	     "UserSID              : %s\n"
 	     "AuthPackage          : %s\n"
 	     "LogonTime            : %d/%d/%d %d:%d:%d\n"
@@ -172,34 +184,35 @@ NTSTATUS ExtractTicket(HANDLE hLsa, ULONG authPackage, LUID luid, UNICODE_STRING
     return status;
 }
 
-void PrintTicketFlags(WCHAR** dispatch, ULONG ticketFlags) {
-    BeaconPrintf(CALLBACK_OUTPUT, "Entered klist.c:PrintTicketFlags");
-
+const char* PrintTicketFlags(ULONG ticketFlags) {
+//    BeaconPrintf(CALLBACK_OUTPUT, "Entered klist.c:PrintTicketFlags");
+    char* outputFlags = "";
     char* flags[16] = {
-        "name_canonicalize", 
-        "anonymous", 
-        "ok_as_delegate",
-        "?",
-        "hw_authent",
-        "pre_authent",
-        "initial",
-        "renewable",
-        "invalid",
-        "postdated",
-        "may_postdate",
-        "proxy",
-        "proxiable",
-        "forwarded",
-        "forwardable",
-        "reserved"
+        " name_canonicalize ", 
+        " anonymous ", 
+        " ok_as_delegate ",
+        " ? ",
+        " hw_authent ",
+        " pre_authent ",
+        " initial ",
+        " renewable ",
+        " invalid ",
+        " postdated ",
+        " may_postdate ",
+        " proxy ",
+        " proxiable ",
+        " forwarded ",
+        " forwardable ",
+        " reserved "
     };
-
+    
     for (int i = 0; i < 16; i++) {
         if ((ticketFlags >> (i + 16)) & 1) {
-            PRINT(dispatch, "%s ", flags[i]);
+	    Mstrcat(outputFlags, flags[i]);
         }
     }
-    PRINT(dispatch, "(0x%lx)\n", ticketFlags);
+    return outputFlags;
+//    BeaconPrintf(CALLBACK_OUTPUT, "Flags: %s\n", outputFlags);
 }
 
 void PrintTicketInfo(WCHAR** dispatch, KERB_TICKET_CACHE_INFO_EX cacheInfo) {
@@ -213,13 +226,13 @@ void PrintTicketInfo(WCHAR** dispatch, KERB_TICKET_CACHE_INFO_EX cacheInfo) {
 	"\tStart Time      : %d/%d/%d %d:%d:%d (UTC)\n"
 	"\tEnd Time        : %d/%d/%d %d:%d:%d (UTC)\n"
 	"\tRenew Time      : %d/%d/%d %d:%d:%d (UTC)\n"
-	"\tFlags           : %lu\n"
+	"\tFlags           : %s\n"
 	"\tEncryption Type : %li\n\n",
 	GetNarrowStringFromUnicode(cacheInfo.ClientName), GetNarrowStringFromUnicode(cacheInfo.ClientRealm), 
 	GetNarrowStringFromUnicode(cacheInfo.ServerName), GetNarrowStringFromUnicode(cacheInfo.ServerRealm),
 	st_utc.wMonth, st_utc.wDay, st_utc.wYear, st_utc.wHour, st_utc.wMinute, st_utc.wSecond,
 	end_utc.wMonth, end_utc.wDay, end_utc.wYear, end_utc.wHour, end_utc.wMinute, end_utc.wSecond,
 	renew_utc.wMonth, renew_utc.wDay, renew_utc.wYear, renew_utc.wHour, renew_utc.wMinute, renew_utc.wSecond,
-	cacheInfo.TicketFlags,
+        PrintTicketFlags(cacheInfo.TicketFlags),
 	cacheInfo.EncryptionType);
 }
