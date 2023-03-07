@@ -56,15 +56,16 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
          SYSTEMTIME logon_utc = ConvertToSystemtime(sessionData.sessionData[i]->LogonTime);
 
          BeaconPrintf(CALLBACK_OUTPUT,
-	     "\nUsername             : %s\n" 
-	     "Domain               : %s\n"
-	     "LogonId              : %lx:0x%lx\n"
-	     "UserSID              : %s\n"
-	     "AuthPackage          : %s\n"
-	     "LogonTime            : %d/%d/%d %d:%d:%d\n"
-	     "LogonServer          : %s\n"
-	     "LogonServerDNSDomain : %s\n"
-         "UserPrincipalName    : %s\n",
+         "\n[*] Session Info\n"
+	     "  Username             : %s\n" 
+	     "  Domain               : %s\n"
+	     "  LogonId              : %lx:0x%lx\n"
+	     "  UserSID              : %s\n"
+	     "  AuthPackage          : %s\n"
+	     "  LogonTime            : %d/%d/%d %d:%d:%d\n"
+	     "  LogonServer          : %s\n"
+	     "  LogonServerDNSDomain : %s\n"
+         "  UserPrincipalName    : %s\n",
 	     GetNarrowStringFromUnicode(sessionData.sessionData[i]->UserName),
 	     GetNarrowStringFromUnicode(sessionData.sessionData[i]->LogonDomain),
 	     sessionData.sessionData[i]->LogonId.HighPart, sessionData.sessionData[i]->LogonId.LowPart,
@@ -98,6 +99,7 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
             continue;
         }
         int ticketCount = cacheResponse->CountOfTickets;
+        BeaconPrintf(CALLBACK_OUTPUT, "[*] Cached Tickets: (%d)\n", ticketCount);
 // ticket section
         if (ticketCount > 0) {
             for (int j = 0; j < ticketCount; j++) {
@@ -207,7 +209,7 @@ void PrintTicketFlags(ULONG ticketFlags) {
             Mstrcat(outputFlags, flags[i]);
         }
     }
-    BeaconPrintf(CALLBACK_OUTPUT, "\tFlags: %s\n", outputFlags);
+    BeaconPrintf(CALLBACK_OUTPUT, "\tFlags           : %s\n", outputFlags);
 }
 
 void PrintTicketInfoKlist(KERB_TICKET_CACHE_INFO_EX cacheInfo) {
