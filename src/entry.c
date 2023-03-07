@@ -8,7 +8,7 @@
 //#include "purge.c"
 #include "klist.c"
 #include "base64.c"
-//#include "ptt.c"
+#include "ptt.c"
 //#include "krb5.c"
 //#include "tgtdeleg.c"
 //#include "kerberoast.c"
@@ -112,8 +112,8 @@ void execute(WCHAR** dispatch, char* command, char* arg1, char* arg2, char* arg3
         }
     } 
       else if (MSVCRT$strcmp(command, "help") == 0) {
-	BeaconPrintf(CALLBACK_OUTPUT,
-            "[*] superNanorobeus v0.1\n[***] Just So You Know:\n\n"
+	  BeaconPrintf(CALLBACK_OUTPUT,
+            "[*] KerBOF v0.1\n[***] Just So You Know:\n\n"
             "    luid\n"
             "    sessions [/luid <0x0> | /all]\n"
             "    klist    [/luid <0x0> | /all]\n"

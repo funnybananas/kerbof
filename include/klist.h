@@ -12,4 +12,4 @@ NTSTATUS ExtractTicket(HANDLE hLsa, ULONG authPackage, LUID luid, UNICODE_STRING
                        PULONG ticketSize);
 void PrintTicketInfoDump(KERB_TICKET_CACHE_INFO_EX cacheInfo, CHAR* encoded);
 void PrintTicketInfoKlist(KERB_TICKET_CACHE_INFO_EX cacheInfo);
-const char* PrintTicketFlags(ULONG ticketFlags);
+void PrintTicketFlags(ULONG ticketFlags);

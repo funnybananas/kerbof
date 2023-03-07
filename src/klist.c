@@ -45,7 +45,7 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
     }
     KERB_QUERY_TKT_CACHE_REQUEST cacheRequest;
     cacheRequest.MessageType = KerbQueryTicketCacheExMessage;
-//{ something from here...
+// something from here...
     for (int i = 0; i < sessionData.sessionCount; i++) {
 //        if (sessionData.sessionData[i] == NULL) {
 //            continue;
@@ -180,9 +180,8 @@ NTSTATUS ExtractTicket(HANDLE hLsa, ULONG authPackage, LUID luid, UNICODE_STRING
     return status;
 }
 
-const char* PrintTicketFlags(ULONG ticketFlags) {
+void PrintTicketFlags(ULONG ticketFlags) {
 //    BeaconPrintf(CALLBACK_OUTPUT, "Entered klist.c:PrintTicketFlags");
-    char* outputFlags = "";
     char* flags[16] = {
         " name_canonicalize ", 
         " anonymous ", 
@@ -200,15 +199,15 @@ const char* PrintTicketFlags(ULONG ticketFlags) {
         " forwarded ",
         " forwardable ",
         " reserved "
-    };
-    
+     };
+
+    char* outputFlags[16];
     for (int i = 0; i < 16; i++) {
         if ((ticketFlags >> (i + 16)) & 1) {
-	    Mstrcat(outputFlags, flags[i]);
+            Mstrcat(outputFlags, flags[i]);
         }
     }
-    return outputFlags;
-//    BeaconPrintf(CALLBACK_OUTPUT, "Flags: %s\n", outputFlags);
+    BeaconPrintf(CALLBACK_OUTPUT, "\tFlags: %s\n", outputFlags);
 }
 
 void PrintTicketInfoKlist(KERB_TICKET_CACHE_INFO_EX cacheInfo) {
@@ -222,15 +221,14 @@ void PrintTicketInfoKlist(KERB_TICKET_CACHE_INFO_EX cacheInfo) {
 	"\tStart Time      : %d/%d/%d %d:%d:%d (UTC)\n"
 	"\tEnd Time        : %d/%d/%d %d:%d:%d (UTC)\n"
 	"\tRenew Time      : %d/%d/%d %d:%d:%d (UTC)\n"
-	"\tFlags           :%s\n"
 	"\tEncryption Type : %li\n",
 	GetNarrowStringFromUnicode(cacheInfo.ClientName), GetNarrowStringFromUnicode(cacheInfo.ClientRealm), 
 	GetNarrowStringFromUnicode(cacheInfo.ServerName), GetNarrowStringFromUnicode(cacheInfo.ServerRealm),
 	st_utc.wMonth, st_utc.wDay, st_utc.wYear, st_utc.wHour, st_utc.wMinute, st_utc.wSecond,
 	end_utc.wMonth, end_utc.wDay, end_utc.wYear, end_utc.wHour, end_utc.wMinute, end_utc.wSecond,
 	renew_utc.wMonth, renew_utc.wDay, renew_utc.wYear, renew_utc.wHour, renew_utc.wMinute, renew_utc.wSecond,
-    PrintTicketFlags(cacheInfo.TicketFlags),
 	cacheInfo.EncryptionType);
+    PrintTicketFlags(cacheInfo.TicketFlags);
 }
 
 void PrintTicketInfoDump(KERB_TICKET_CACHE_INFO_EX cacheInfo, CHAR* encoded) {
@@ -244,7 +242,6 @@ void PrintTicketInfoDump(KERB_TICKET_CACHE_INFO_EX cacheInfo, CHAR* encoded) {
 	"\tStart Time      : %d/%d/%d %d:%d:%d (UTC)\n"
 	"\tEnd Time        : %d/%d/%d %d:%d:%d (UTC)\n"
 	"\tRenew Time      : %d/%d/%d %d:%d:%d (UTC)\n"
-	"\tFlags           :%s\n"
 	"\tEncryption Type : %li\n"
 	"\tTicket          : %s\n",
 	GetNarrowStringFromUnicode(cacheInfo.ClientName), GetNarrowStringFromUnicode(cacheInfo.ClientRealm), 
@@ -252,7 +249,7 @@ void PrintTicketInfoDump(KERB_TICKET_CACHE_INFO_EX cacheInfo, CHAR* encoded) {
 	st_utc.wMonth, st_utc.wDay, st_utc.wYear, st_utc.wHour, st_utc.wMinute, st_utc.wSecond,
 	end_utc.wMonth, end_utc.wDay, end_utc.wYear, end_utc.wHour, end_utc.wMinute, end_utc.wSecond,
 	renew_utc.wMonth, renew_utc.wDay, renew_utc.wYear, renew_utc.wHour, renew_utc.wMinute, renew_utc.wSecond,
-    PrintTicketFlags(cacheInfo.TicketFlags),
 	cacheInfo.EncryptionType,
 	encoded);
+    PrintTicketFlags(cacheInfo.TicketFlags);
 }
