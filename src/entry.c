@@ -43,10 +43,10 @@ void go(char* args, int length) {
     if (arg4 == NULL) {
         arg4 = "";
     }
-    execute(NULL, command, arg1, arg2, arg3, arg4);
+    execute(command, arg1, arg2, arg3, arg4);
 }
 
-void execute(WCHAR** dispatch, char* command, char* arg1, char* arg2, char* arg3, char* arg4) {
+void execute(char* command, char* arg1, char* arg2, char* arg3, char* arg4) {
 //    BeaconPrintf(CALLBACK_OUTPUT, "[+] Entered execute. Command is: %s", command);
 
     _CloseHandle MCloseHandle = (_CloseHandle)GetProcAddress(GetModuleHandleW(L"Kernel32.dll"), "CloseHandle");
