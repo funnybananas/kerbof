@@ -61,7 +61,7 @@ void execute(WCHAR** dispatch, char* command, char* arg1, char* arg2, char* arg3
     BOOL currentLuid = FALSE;
     HANDLE hToken = GetCurrentToken(TOKEN_QUERY);
     if (hToken == NULL) {
-        PRINT(dispatch, "[!] Unable to query current token: %ld\n", MGetLastError());
+        BeaconPrintf(CALLBACK_ERROR, "[!] Unable to query current token: %ld\n", MGetLastError());
         return;
     }
 
@@ -74,11 +74,11 @@ void execute(WCHAR** dispatch, char* command, char* arg1, char* arg2, char* arg3
                 if (MSVCRT$strcmp(arg2, "") != 0) {
                     luid.LowPart = MSVCRT$strtol(arg2, NULL, 16);
                     if (luid.LowPart == 0 || luid.LowPart == LONG_MAX || luid.LowPart == LONG_MIN) {
-                        PRINT(dispatch, "[!] Specify valid /luid\n");
+                        BeaconPrintf(CALLBACK_ERROR, "[!] Specify valid /luid\n");
                         goto end;
                     }
                 } else {
-                    PRINT(dispatch, "[!] Specify /luid argument\n");
+                    BeaconPrintf(CALLBACK_ERROR, "[!] Specify /luid argument\n");
                     goto end;
                 }
             } else if (MSVCRT$strcmp(arg1, "/all") == 0) {
@@ -86,13 +86,13 @@ void execute(WCHAR** dispatch, char* command, char* arg1, char* arg2, char* arg3
                 luid = (LUID){.HighPart = 0, .LowPart = 0};
                 BeaconPrintf(CALLBACK_OUTPUT, "luid:  %lx:0x%lx", luid.HighPart, luid.LowPart);
             } else {
-                PRINT(dispatch, "[!] Unknown command\n");
+                BeaconPrintf(CALLBACK_ERROR, "[!] Unknown command\n");
                 goto end;
             }
         } else {
             LUID* cLuid = GetCurrentLUID(hToken);
             if (cLuid == NULL) {
-                PRINT(dispatch, "[!] Unable to get current session LUID: %ld\n", MGetLastError());
+                BeaconPrintf(CALLBACK_ERROR, "[!] Unable to get current session LUID: %ld\n", MGetLastError());
                 goto end;
             }
             luid.HighPart = cLuid->HighPart;
@@ -117,7 +117,7 @@ void execute(WCHAR** dispatch, char* command, char* arg1, char* arg2, char* arg3
                     if (MSVCRT$strcmp(arg3, "") != 0) {
                         luid.LowPart = MSVCRT$strtol(arg3, NULL, 16);
                         if (luid.LowPart == 0 || luid.LowPart == LONG_MAX || luid.LowPart == LONG_MIN) {
-                            PRINT(dispatch, "[!] Specify valid /luid\n");
+                            BeaconPrintf(CALLBACK_ERROR, "[!] Specify valid /luid\n");
                             goto end;
                         }
                     }
@@ -125,7 +125,7 @@ void execute(WCHAR** dispatch, char* command, char* arg1, char* arg2, char* arg3
             } else {
                 LUID* cLuid = GetCurrentLUID(hToken);
                 if (cLuid == NULL) {
-                    PRINT(dispatch, "[!] Unable to get current session LUID: %ld\n", MGetLastError());
+                    BeaconPrintf(CALLBACK_ERROR, "[!] Unable to get current session LUID: %ld\n", MGetLastError());
                     goto end;
                 }
                 luid.HighPart = cLuid->HighPart;
@@ -133,9 +133,9 @@ void execute(WCHAR** dispatch, char* command, char* arg1, char* arg2, char* arg3
                 currentLuid = TRUE;
                 MSVCRT$free(cLuid);
             }
-            execute_ptt(dispatch, hToken, ticket, luid, currentLuid);
+            execute_ptt(hToken, ticket, luid, currentLuid);
         } else {
-            PRINT(dispatch, "[!] Specify Base64 encoded ticket\n");
+            BeaconPrintf(CALLBACK_ERROR, "[!] Specify Base64 encoded ticket\n");
             goto end;
         } 
 //    } else if (MSVCRT$strcmp(command, "help") == 0) {
@@ -171,7 +171,7 @@ void execute(WCHAR** dispatch, char* command, char* arg1, char* arg2, char* arg3
 //            "\tsubkey_keymaterial           = 65\n"
 //            "\told_exp                      = -135\n");
     } else {
-        PRINT(dispatch, "[!] Unknown command.\n");
+        BeaconPrintf(CALLBACK_ERROR, "[!] Unknown command.\n");
     }
 end:
     MCloseHandle(hToken);

