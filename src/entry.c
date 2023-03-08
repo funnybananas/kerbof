@@ -66,7 +66,7 @@ void execute(WCHAR** dispatch, char* command, char* arg1, char* arg2, char* arg3
     }
 
     if (MSVCRT$strcmp(command, "luid") == 0) {
-        execute_luid(dispatch, hToken);
+        execute_luid(hToken);
     } else if ((MSVCRT$strcmp(command, "sessions") == 0) || (MSVCRT$strcmp(command, "klist") == 0) ||
                (MSVCRT$strcmp(command, "dump") == 0)) {
         if (MSVCRT$strcmp(arg1, "") != 0) {

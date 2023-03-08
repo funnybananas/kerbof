@@ -1,13 +1,13 @@
 #include "luid.h"
 
-void execute_luid(WCHAR** dispatch, HANDLE hToken) {
+void execute_luid(HANDLE hToken) {
     _GetLastError MGetLastError = (_GetLastError)GetProcAddress(GetModuleHandleW(L"Kernel32.dll"), "GetLastError");
     LUID* currentLUID = GetCurrentLUID(hToken);
     if (currentLUID == NULL) {
-        PRINT(dispatch, "[!] Unable to get current session LUID: %ld\n", MGetLastError());
+        BeaconPrintf(CALLBACK_ERROR, "[!] Unable to get current session LUID: %ld\n", MGetLastError());
         return;
     }
-    PRINT(dispatch, "[+] Current LogonId: %lx:0x%lx\n\n", currentLUID->HighPart, currentLUID->LowPart);
+    BeaconPrintf(CALLBACK_OUTPUT, "[+] Current LogonId: %lx:0x%lx\n\n", currentLUID->HighPart, currentLUID->LowPart);
     MSVCRT$free(currentLUID);
 }
 
