@@ -16,3 +16,42 @@ alias kerbof {
     # execute it.
     beacon_inline_execute($1, $data, "go", $args);
 }
+
+beacon_command_register (
+    "kerbof",
+    "KerBOF - Kerberos Manipulation via BOF",
+    "[]*] KerBOF v0.1
+    [***] Just So You Know:
+
+    [!] The /all flag is currently broken
+    luid
+    sessions [/luid <0x0> | /all]
+    klist    [/luid <0x0> | /all]
+    dump     [/luid <0x0> | /all]
+    ptt      <BASE64> [/luid <0x0>]
+    [removed] purge    [/luid <0x0>]
+    [removed] tgtdeleg <SPN>
+    [removed] kerberoast <SPN>
+
+    Encryption Reference List:
+	des_cbc_crc                  = 1
+	des_cbc_md4                  = 2
+	des_cbc_md5                  = 3
+	des3_cbc_md5                 = 5
+	des3_cbc_sha1                = 7
+	dsaWithSHA1_CmsOID           = 9
+	md5WithRSAEncryption_CmsOID  = 10
+	sha1WithRSAEncryption_CmsOID = 11
+	rc2CBC_EnvOID                = 12
+	rsaEncryption_EnvOID         = 13
+	rsaES_OAEP_ENV_OID           = 14
+	des_ede3_cbc_Env_OID         = 15
+	des3_cbc_sha1_kd             = 16
+	aes128_cts_hmac_sha1         = 17
+	aes256_cts_hmac_sha1         = 18
+	rc4_hmac                     = 23
+	rc4_hmac_exp                 = 24
+	subkey_keymaterial           = 65
+	old_exp                      = -135"
+);
+
