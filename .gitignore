@@ -2,3 +2,6 @@
 .vs
 bin/
 obj/
+build
+*.o
+dist/*.o
