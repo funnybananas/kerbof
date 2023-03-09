@@ -1,5 +1,5 @@
 # KerBOF
-CS BOF for managing kerboers tickets. Inspired and modified from wavvs/nanorobeus [https://github.com/wavvs/nanorobeus] and ghostpack/rubeus [https://github.com/GhostPack/Rubeus]
+CS BOF for managing kerboers tickets. Thanks to wavvs/nanorobeus [https://github.com/wavvs/nanorobeus] for providing most of the code and inspiration. I modified much of the original code so felt like it needed a new name.
 
 ## Commands
 ### NOTE: The /all flag is currently bugged. I've removed it from the BOF for the time being.
