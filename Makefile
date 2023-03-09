@@ -1,10 +1,7 @@
 BOFNAME := KerBOF
 CC_x64 := x86_64-w64-mingw32-gcc
 STRIP := strip
-#OPTIONS := -O3 -masm=intel -Wall -Wextra -g -I include -fno-reorder-functions
 OPTIONS := -masm=intel -Wall -I include
-
-.PHONY: all exe bof brc4 
 
 bof: bof_64
 
