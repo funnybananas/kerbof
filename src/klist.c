@@ -204,6 +204,7 @@ void PrintTicketFlags(ULONG ticketFlags) {
      };
 
     char* outputFlags[16];
+	
     for (int i = 0; i < 16; i++) {
         if ((ticketFlags >> (i + 16)) & 1) {
             Mstrcat(outputFlags, flags[i]);
