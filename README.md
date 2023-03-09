@@ -2,7 +2,7 @@
 CS BOF for managing kerboers tickets. Thanks to wavvs/nanorobeus [https://github.com/wavvs/nanorobeus] for providing most of the code and inspiration. I modified much of the original code so felt like it needed a new name.
 
 ## COMMANDS
-### NOTE: The /all flag is currently bugged. I've removed it from the BOF for the time being.
+:warning:The /all flag is currently bugged. I've removed it from the BOF for the time being.
 
 | COMMAND | DESCRIPTION |
 | ------- | ----------- |
