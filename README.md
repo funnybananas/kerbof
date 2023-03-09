@@ -2,6 +2,7 @@
 CS BOF for managing kerboers tickets. Inspired and modified from wavvs/nanorobeus [https://github.com/wavvs/nanorobeus] and ghostpack/rubeus [https://github.com/GhostPack/Rubeus]
 
 ## Commands
+### NOTE: The /all flag is currently bugged. I've removed it from the BOF for the time being.
 
 **luid** - get current logon ID
 
@@ -13,11 +14,11 @@ CS BOF for managing kerboers tickets. Inspired and modified from wavvs/nanorobeu
 
 **ptt** *\<base64\> [/luid <0x0>]* - import Kerberos ticket into a logon session
 
-**purge** *[/luid <0x0>]* - purge Kerberos tickets
+TODO: **purge** *[/luid <0x0>]* - purge Kerberos tickets
 
-**tgtdeleg** *\<spn\>* - retrieve a usable TGT for the current user
+TODO: **tgtdeleg** *\<spn\>* - retrieve a usable TGT for the current user
 
-**kerberoast** *\<spn\>* - perform Kerberoasting against specified SPN
+TODO: **kerberoast** *\<spn\>* - perform Kerberoasting against specified SPN
 
 ## Credits
 * Rubeus - https://github.com/GhostPack/Rubeus
